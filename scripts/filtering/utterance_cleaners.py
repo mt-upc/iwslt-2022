@@ -53,6 +53,8 @@ def clean_event(text: str) -> str:
     # parenthesis with punctuations, " . ... :, before or after 
     all_event_patterns = r'"(\([^()]*\))"|"(\([^()]*\))|(\([^()]*\):)|(\([^()]*\)\.\.\.)|(\([^()]*\)\.)|(\([^()]*\))'
     text = re.sub(all_event_patterns, "", text)
+    
+    text = text.replace(" -- -- ", " -- ")
 
     return text
 
@@ -66,9 +68,13 @@ def general_utterance_cleaner(text: str) -> str:
 
     # normalizes punctuation
     text = mpn.normalize(text)
+    
+    # normalization bug
+    text = text.replace(',"', '",')
+    text = text.replace(",'", "',")
 
     # empty if it does not contain at least two consequitve letters (shortest word)
-    if len(re.findall("[a-zA-Z]{2}", text)) < 2:
+    if len(text) and max([len(t) for t in text.split()]) < 2:
         text = ""
 
     return text
@@ -100,10 +106,19 @@ def europarlst_utterance_cleaner(text: str) -> str:
             search = False
 
     text = general_utterance_cleaner(text)
-
+    
+    # extra space between quotes
+    text = text.replace(" ' s ", "'s ")
+    for pattern in re.findall(f"(' [^']+ ')", text) + re.findall(f'(" [^"]+ ")', text):
+        text = text.replace(pattern, pattern[0] + pattern[2:-2] + pattern[-1])
+    text = text.replace("s ' ", "s' ")
+    
     return text
 
 
 def covost_utterance_cleaner(text: str) -> str:
+
+    # very frequent double quotes in covost
+    text = text.replace('""', '"')
     text = general_utterance_cleaner(text)
     return text
