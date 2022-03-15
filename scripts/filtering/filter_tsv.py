@@ -9,22 +9,11 @@ from examples.iwslt22.scripts.filtering.utterance_cleaners import (
     covost_utterance_cleaner,
     europarlst_utterance_cleaner,
     mustc_utterance_cleaner,
+    general_utterance_cleaner,
 )
 from examples.speech_to_text.data_utils import load_df_from_tsv, save_df_to_tsv
 
 tqdm.pandas(desc="progress")
-
-DATASETS = ["MUSTC", "EUROPARLST", "COVOST"]
-TRAIN_SPLITS = {
-    "MUSTC": ["train"],
-    "EUROPARLST": ["train", "dev", "test"],
-    "COVOST": ["train", "dev", "test"],
-}
-CLEANER_FUNC = {
-    "MUSTC": mustc_utterance_cleaner,
-    "EUROPARLST": europarlst_utterance_cleaner,
-    "COVOST": covost_utterance_cleaner,
-}
 
 
 def remove_noisy_examples(
@@ -52,6 +41,16 @@ def remove_noisy_examples(
 
 def filter_tsv(args):
 
+    if "MUSTC" in args.tsv_path:
+        utterance_cleaner = mustc_utterance_cleaner
+    elif "EuroparlST" in args.tsv_path:
+        utterance_cleaner = europarlst_utterance_cleaner
+    elif "CoVoST" in args.tsv_path:
+        utterance_cleaner = covost_utterance_cleaner
+    else:
+        print("WARNING: Dataset not identified. Using general utterance cleaner")
+        utterance_cleaner = general_utterance_cleaner
+
     st_tsv_path = Path(args.tsv_path)
     st_output_path = Path(args.output_dir_path) / st_tsv_path.name.replace(
         ".tsv", "_filtered.tsv"
@@ -68,7 +67,6 @@ def filter_tsv(args):
         assert len(df_st) == len(df_asr), "ASR and ST data sizes do not match"
 
     # target text cleaning
-    utterance_cleaner = CLEANER_FUNC[args.dataset_name]
     df_st["tgt_text"] = df_st.progress_apply(
         lambda x: utterance_cleaner(x["tgt_text"]), axis=1
     )
@@ -113,9 +111,6 @@ def filter_tsv(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--dataset-name", "-d", type=str, required=True, choices=DATASETS
-    )
-    parser.add_argument(
         "--tsv-path",
         "-tsv",
         type=str,
@@ -128,12 +123,12 @@ if __name__ == "__main__":
         "--wer-threshold",
         "-wer",
         type=float,
-        default=0.5,
+        default=0.75,
         help="Word-Error-Rate above which an example is considered noisy.",
     )
     parser.add_argument(
         "--parallel",
-        "-p",
+        "-par",
         action="store_true",
         help="whether to parallel filter the ASR split of the tsv",
     )
