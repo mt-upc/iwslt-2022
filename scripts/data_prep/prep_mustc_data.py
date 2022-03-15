@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates.
 #
+# This code is a modification of the preprocessing script available here:
+# https://github.com/pytorch/fairseq/blob/98ebe4/examples/speech_to_text/prep_mustc_data.py
+#
 # This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
+# LICENSE file in the root directory of the fairseq repository:
+# https://github.com/pytorch/fairseq/blob/main/LICENSE
 
 import argparse
 import logging
