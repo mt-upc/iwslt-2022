@@ -15,3 +15,4 @@ dependencies:
 - fairscale=0.4.3
 - sentencepiece=0.1.95
 - wandb=0.12.7
+- pysoundfile=0.10.3.post1
