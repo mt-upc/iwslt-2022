@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates.
 #
-# This code is a modification of the preprocessing script available here:
-# https://github.com/pytorch/fairseq/blob/98ebe4/examples/speech_to_text/prep_mustc_data.py
-#
 # This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of the fairseq repository:
-# https://github.com/pytorch/fairseq/blob/main/LICENSE
+# LICENSE file in the root directory of this source tree.
 
 import argparse
 import logging
@@ -51,18 +47,11 @@ class MUSTC(Dataset):
     utterance_id
     """
 
-    SPLITS_a = ["train", "dev", "tst-COMMON", "tst-HE"]
-    SPLITS_b = ["train", "dev"]
     LANGUAGES = ["de", "es", "fr", "it", "nl", "pt", "ro", "ru", "ja", "zh"]
-    SPLITS = {}
-    for lang in LANGUAGES:
-        if lang == "zh":
-            SPLITS[lang] = SPLITS_b
-        else:
-            SPLITS[lang] = SPLITS_a
+    SPLITS = ["train", "dev", "tst-COMMON", "tst-HE"]
 
     def __init__(self, root: str, lang: str, split: str) -> None:
-        assert split in self.SPLITS[lang] and lang in self.LANGUAGES
+        assert split in self.SPLITS and lang in self.LANGUAGES
         _root = Path(root) / f"en-{lang}" / "data" / split
         wav_root, txt_root = _root / "wav", _root / "txt"
         assert _root.is_dir() and wav_root.is_dir() and txt_root.is_dir()
@@ -129,7 +118,7 @@ def process(args):
         generate_zip = not zip_path.is_file()
         if generate_zip:
             audio_root.mkdir(exist_ok=True)
-            for split in MUSTC.SPLITS[lang]:
+            for split in MUSTC.SPLITS:
                 print(f"Fetching split {split}...")
 
                 dataset = MUSTC(root.as_posix(), lang, split)
@@ -182,6 +171,8 @@ def process(args):
         for split in MUSTC.SPLITS[lang]:
             is_train_split = split.startswith("train")
             manifest = {c: [] for c in MANIFEST_COLUMNS}
+            if args.append_lang_id:
+                manifest["tgt_lang"] = []
             dataset = MUSTC(args.data_root, lang, split)
             for _, _, src_utt, tgt_utt, speaker_id, utt_id in tqdm(dataset):
                 manifest["id"].append(utt_id)
@@ -273,7 +264,7 @@ def process_joint(args):
     )
     # Make symbolic links to manifests
     for lang in MUSTC.LANGUAGES:
-        for split in MUSTC.SPLITS[lang]:
+        for split in MUSTC.SPLITS:
             src_path = cur_root / f"en-{lang}" / f"{split}_{args.task}.tsv"
             desc_path = cur_root / f"{split}_{lang}_{args.task}.tsv"
             if not desc_path.is_symlink():
@@ -311,7 +302,7 @@ def main():
         action="store_true",
         help="only does feature extraction and skips the vocab creation process",
     )
-    parser.add_argument("--append_lang_id", action="store_true")
+    parser.add_argument("--append-lang-id", action="store_true")
     args = parser.parse_args()
 
     if args.joint:
