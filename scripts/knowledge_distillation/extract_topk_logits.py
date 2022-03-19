@@ -79,13 +79,12 @@ def prepare_corpus_for_kd(args):
     model.to(main_device)
 
     path_to_output = Path(args.path_to_output)
-    if path_to_output.is_file():
-        with open(path_to_output, "r") as f:
-            completed_ids = [json.loads(example)["id"] for example in f]
+    if path_to_output.exists():
+        completed_ids = [file.stem for file in path_to_output.glob(".pt")]
     else:
-        path_to_output.parent.mkdir(exist_ok=True, parents=True)
         completed_ids = []
-
+        path_to_output.mkdir(parents=True, exist_ok=True)
+        
     dataset = SourceDataset(
         args.data_root, args.asr_tsv_name, args.st_tsv_name, tokenizer, completed_ids
     )
@@ -121,19 +120,15 @@ def prepare_corpus_for_kd(args):
 
             for i in range(bs):
                 seq_len_i = tgt_seq_lens[i]
-                topk_outputs_i = topk_outputs[i, 1:seq_len_i, :].detach().cpu().tolist()
-                topk_indices_i = topk_indices[i, 1:seq_len_i, :].detach().cpu().tolist()
-
-                with open(args.path_to_output, "a") as f:
-                    json.dump(
-                        {
-                            "id": sgm_ids[i],
-                            "topk_indices": topk_indices_i,
-                            "topk_outputs": topk_outputs_i,
-                        },
-                        f,
-                    )
-                    f.write("\n")
+                topk_outputs_i = topk_outputs[i, 1:seq_len_i, :].detach().cpu()
+                topk_indices_i = topk_indices[i, 1:seq_len_i, :].detach().cpu()
+                
+                torch.save(
+                    {
+                        "topk_indices": topk_indices_i,
+                        "topk_outputs": topk_outputs_i,
+                    }, args.path_to_output / f"{sgm_ids[i]}.pt"
+                )
 
 
 if __name__ == "__main__":
