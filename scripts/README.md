@@ -159,12 +159,11 @@ done
 
 ```bash
 for tgt_lang in {de,ja,zh}; do
-    echo $tgt_lang
     python examples/iwslt22/scripts/knowledge_distillation/prepare_corpus_for_kd.py \
     -d ${MUSTC_ROOT}/en-${tgt_lang} \
     -asr train_asr_filtered.tsv \
     -st train_st_filtered.tsv \
-    -o ${KD_ROOT}/en-${tgt_lang}/mustc_train_st_f.json
+    -o ${KD_ROOT}/en-${tgt_lang}/mustc_train_st_f
 done
 #this is done
 
@@ -173,7 +172,7 @@ for split in {train,dev,test}; do
     -d ${EUROPARL_ROOT}/en \
     -asr en-de_${split}_asr_filtered.tsv \
     -st en-de_${split}_st_filtered.tsv \
-    -o ${KD_ROOT}/en-de/europarl_${split}_st_f.json
+    -o ${KD_ROOT}/en-de/europarl_${split}_st_f
 done
 
 for tgt_lang in {de,ja,zh}; do
@@ -182,13 +181,46 @@ for tgt_lang in {de,ja,zh}; do
         -d ${COVOST_ROOT}/en-${tgt_lang} \
         -asr ${split}_asr_filtered.tsv \
         -st ${split}_st_filtered.tsv \
-        -o ${KD_ROOT}/en-${tgt_lang}/covost_${split}_st_f.json
+        -o ${KD_ROOT}/en-${tgt_lang}/covost_${split}_st_f
     done
 done
 
 ```
 
+
+## IWSLT DATA
+
+```bash
+for tgt_lang in {de,ja,zh}; do
+    wget http://i13pc106.ira.uka.de/~jniehues/IWSLT-SLT/data/eval/en-${tgt_lang}/IWSLT-SLT.tst2022.en-${tgt_lang}.tgz
+    tar -xvf IWSLT-SLT.tst2022.en-${tgt_lang}.tgz
+    rm IWSLT-SLT.tst2022.en-${tgt_lang}.tgz
+    cut -d' ' -f1 IWSLT.tst2022/IWSLT.TED.tst2022.en-${tgt_lang}.en.video_url > IWSLT.tst2022/FILER_ORDER.en-${tgt_lang}
+done
+
+
+```
+
+
 conda activate iwslt22
 export TOKENIZERS_PARALLELISM=true
 cd ~/repos/fairseq-internal-iwslt22/ 
 python examples/iwslt22/scripts/knowledge_distillation/prepare_corpus_for_kd.py -d ~/datasets/speech_translation/MUSTC_v2.0_wav_16k/en-de/ -asr train_asr.tsv -st train_st.tsv -o ~/datasets/knowledge_distillation/MUSTC_v2.0/de_train.json
+
+fairseq-train ${DATASETS_ROOT}/en-de --train-subset train_mustc_st_f --valid-subset dev_mustc_st --save-dir /home/usuaris/veussd/DATABASES/speech_translation/MUSTC_v2.0_wav_16k/en-de --num-workers 1 --max-tokens 480000 --max-update 100000 --task speech_to_text --criterion label_smoothed_cross_entropy --label-smoothing 0.1 --report-accuracy --arch s2t_transformer_s --optimizer adam --lr 2e-3 --lr-scheduler inverse_sqrt --warmup-updates 10000 --clip-norm 10.0 --seed 1 --update-freq 1
+
+/home/usuaris/veussd/gerard.ion.gallego/pretrained_models/mbart50.ft.1n/sentence.bpe.model
+/home/usuaris/veussd/gerard.ion.gallego/pretrained_models/mbart50.ft.1n/dict.de_DE.txt
+
+for f in ./*_asr*.tsv; do
+    sed -e '1 s/$/\ttgt_lang/' -e '2,$ s/$/\ten/' < $f > ${f}.new && \
+    mv ${f}.new $f
+    echo $f
+done
+
+TGT_LANG=zh
+for f in ./*_st*.tsv; do
+    sed -e '1 s/$/\ttgt_lang/' -e '2,$ s/$/\t'"${TGT_LANG}"'/' < $f > ${f}.new && \
+    mv ${f}.new $f
+    echo $f
+done
