@@ -6,6 +6,7 @@ channels:
 - defaults
 
 dependencies:
+- pip=22.0.3
 - python=3.7.10
 - pytorch=1.9.0
 - torchaudio=0.9.0
@@ -16,3 +17,6 @@ dependencies:
 - sentencepiece=0.1.95
 - wandb=0.12.7
 - pysoundfile=0.10.3.post1
+
+- pip:
+  - wavaugment==0.2
