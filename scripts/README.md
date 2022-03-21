@@ -43,11 +43,11 @@ wget https://dl.fbaipublicfiles.com/covost/covost_v2.en_ja.tsv.tar.gz
 Convert to 16khz, mono, .wav
 
 ```bash
-num_processors=...
-
-mkdir -p ${COVOST_ROOT}/en/clips_converted
+export COVOST_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en
+num_processors=24
+mkdir -p ${COVOST_ROOT}/clips_mono_16k
 for split in {train,dev,test}; do
-    cat ${COVOST_ROOT}/en/${split}.tsv | cut -f2 | parallel -j $num_processors ffmpeg -i ${COVOST_ROOT}/en/clips/{} -ac 1 -ar 16000 -hide_banner -loglevel error ${COVOST_ROOT}/en/clips_converted/{.}.wav
+    cat ${COVOST_ROOT}/${split}.tsv | cut -f2 | parallel -j $num_processors ffmpeg -i ${COVOST_ROOT}/clips/{} -ac 1 -ar 16000 -hide_banner -loglevel error ${COVOST_ROOT}/clips_mono_16k/{.}.wav
 done
 ```
 
@@ -107,6 +107,15 @@ export COVOST_ROOT=/home/usuaris/veussd/DATABASES/speech_translation/cv-corpus-8
 ```
 
 ```bash
+export DATA_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/IWSLT22/data
+export ASR_INFER_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/IWSLT22/asr_inference
+export KD_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/IWSLT22/knowledge_distillation
+export MUSTC_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/MUSTC_v2.0_wav_16k
+export EUROPARL_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/EuroparlST_wav_16k
+export COVOST_ROOT=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19_old/en/CoVoST
+```
+
+```bash
 for tgt_lang in {de,ja,zh}; do
     python examples/iwslt22/scripts/filtering/filter_tsv.py \
     -tsv ${MUSTC_ROOT}/en-${tgt_lang}/train_st.tsv \
@@ -138,20 +147,27 @@ done
 
 ```bash
 for tgt_lang in {de,ja,zh}; do
-    ln -s ${MUSTC_ROOT}/en-${tgt_lang}/train_st_filtered.tsv ${DATASET_ROOT}/en-${tgt_lang}/mustc_train_st_f.tsv
-    ln -s ${MUSTC_ROOT}/en-${tgt_lang}/dev_st.tsv ${DATASET_ROOT}/en-${tgt_lang}/mustc_dev_st.tsv
-    ln -s ${MUSTC_ROOT}/en-${tgt_lang}/tst-COMMON_st.tsv ${DATASET_ROOT}/en-${tgt_lang}/mustc_tst-COMMON_st.tsv
-    done
+    ln -s ${MUSTC_ROOT}/en-${tgt_lang}/train_st_filtered.tsv ${DATA_ROOT}/en-${tgt_lang}/train_mustc.tsv
+    ln -s ${MUSTC_ROOT}/en-${tgt_lang}/dev_st.tsv ${DATA_ROOT}/en-${tgt_lang}/dev_mustc.tsv
+    ln -s ${MUSTC_ROOT}/en-${tgt_lang}/tst-COMMON_st.tsv ${DATA_ROOT}/en-${tgt_lang}/tst-COMMON_mustc.tsv
 done
 
 for tgt_lang in {de,ja,zh}; do
     for split in {train,dev,test}; do
-        ln -s ${COVOST_ROOT}/en-${tgt_lang}/${split}_st_filtered.tsv ${DATASET_ROOT}/en-${tgt_lang}/covost_${split}_st_f.tsv
+        if [[ $split != train ]]; then
+            ln -s ${COVOST_ROOT}/en-${tgt_lang}/${split}_st_filtered.tsv ${DATA_ROOT}/en-${tgt_lang}/train_${split}_covost.tsv
+        else
+            ln -s ${COVOST_ROOT}/en-${tgt_lang}/${split}_st_filtered.tsv ${DATA_ROOT}/en-${tgt_lang}/${split}_covost.tsv
+        fi
     done
 done
 
 for split in {train,dev,test}; do
-    ln -s ${EUROPARL_ROOT}/en/en-de_${split}_st_filtered.tsv ${DATASET_ROOT}/en-de/europarl_${split}_st_f.tsv
+    if [[ $split != train ]]; then
+        ln -s ${EUROPARL_ROOT}/en/en-de_${split}_st_filtered.tsv ${DATA_ROOT}/en-de/train_${split}_europarl.tsv
+    else
+        ln -s ${EUROPARL_ROOT}/en/en-de_${split}_st_filtered.tsv ${DATA_ROOT}/en-de/${split}_europarl.tsv
+    fi
 done
 ```
 
@@ -224,3 +240,35 @@ for f in ./*_st*.tsv; do
     mv ${f}.new $f
     echo $f
 done
+
+```bash
+dir_path=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/MUSTC_v2.0_wav_16k/*/*.tsv
+sed -i 's+/home/usuaris/veussd/DATABASES/speech_translation/MUSTC_v2.0+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/MUSTC_v2.0_wav_16k+g' $dir_path
+```
+
+```bash
+dir_path=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/EuroparlST_wav_16k/en/*.tsv
+sed -i 's+/home/usuaris/veussd/DATABASES/speech_translation/EuroparlST_wav_16k/en/flac.zip+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/EuroparlST_wav_16k/en/flac.zip+g' $dir_path
+```
+
+```bash
+dir_path=/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/CoVoST/en-de/*.tsv
+sed -i 's+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+g' $dir_path
+```
+
+/home/usuaris/veussd/DATABASES/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono/
+
+max_tokens: 480000
+max_source: 400000
+batch_size: 18
+==> 2136
+
+max_tokens: 480000
+max_source: 400000
+batch_size: 24
+==> 2129
+
+max_tokens: 600000
+max_source: 400000
+batch_size: 24
+==> 1635
