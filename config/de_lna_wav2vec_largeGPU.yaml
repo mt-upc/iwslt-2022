@@ -15,7 +15,6 @@ distributed_training:
 
 checkpoint:
   save_dir: ${env:SAVE_DIR}/${env:WANDB_NAME}/ckpts/
-  save_interval: 0
   save_interval_updates: 500
   keep_interval_updates: 10
   keep_best_checkpoints: 5
@@ -25,9 +24,8 @@ dataset:
   valid_subset: dev_mustc
   num_workers: 16
   batch_size: 64
-  max_tokens: 2_160_000                   # 135s @ 16kHz
+  max_tokens: 2_240_000                   # 140s @ 16kHz
   max_tokens_valid: 4_800_000             # 300s @ 16kHz
-  validate_interval: 0
   validate_interval_updates: 500
   validate_after_updates: 7_812           # ~4 epochs
   skip_invalid_size_inputs_valid_test: True
