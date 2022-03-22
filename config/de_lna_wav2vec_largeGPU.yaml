@@ -26,7 +26,7 @@ dataset:
   batch_size: 32
   required_batch_size_multiple: 1
   max_tokens: 1_150_000                   # ~70s @ 16kHz
-  max_tokens_valid: 4_800_000             # 300s @ 16kHz
+  max_tokens_valid: 4_000_000             # 250s @ 16kHz
   validate_interval_updates: 500
   validate_after_updates: 8_128           # ~4 epochs
   skip_invalid_size_inputs_valid_test: True
