@@ -23,17 +23,18 @@ dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
   num_workers: 16
-  batch_size: 64
-  max_tokens: 2_240_000                   # 140s @ 16kHz
+  batch_size: 32
+  required_batch_size_multiple: 1
+  max_tokens: 1_150_000                   # ~70s @ 16kHz
   max_tokens_valid: 4_800_000             # 300s @ 16kHz
   validate_interval_updates: 500
-  validate_after_updates: 7_812           # ~4 epochs
+  validate_after_updates: 8_128           # ~4 epochs
   skip_invalid_size_inputs_valid_test: True
 
 task:
   _name: speech_to_text
   data: ${env:DATA_ROOT}/en-de
-  max_source_positions: 480_000           # 30s @ 16kHz
+  max_source_positions: 400_000           # 25s @ 16kHz
   max_target_positions: 1024
   sampling_ratios: 1,1,1,1,1,1,1
   eval_bleu: True
@@ -98,8 +99,8 @@ optimizer:
 
 optimization:
   lr: [1e-04]
-  max_update: 31_248                      # ~16 epochs
-  update_freq: [16]                       # with 1 GPU
+  max_update: 32_512                      # ~16 epochs
+  update_freq: [24]                       # with 1 GPU
   clip_norm: 20.0
   sentence_avg: True
 
