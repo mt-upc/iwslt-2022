@@ -11,31 +11,29 @@ common:
   wandb_project: ${env:WANDB_PROJECT}
 
 distributed_training:
-  find_unused_parameters: True
+  heartbeat_timeout: 180
 
 checkpoint:
   save_dir: ${env:SAVE_DIR}/${env:WANDB_NAME}/ckpts/
-  save_interval_updates: 300
-  keep_interval_updates: 10
-  keep_best_checkpoints: 5
-  no_epoch_checkpoints: True
+  save_interval_updates: 500
+  no_last_checkpoints: True
+  keep_best_checkpoints: 0
 
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
-  num_workers: 4
+  num_workers: 8
+  batch_size: 18
+  required_batch_size_multiple: 1
   max_tokens: 480_000             # 30s @ 16kHz
-  max_tokens_valid: 960_000
-  batch_size: 24
-  skip_invalid_size_inputs_valid_test: True
+  disable_validation: True
 
 task:
   _name: speech_to_text
   data: ${env:DATA_ROOT}/en-de
-  max_source_positions: 480_000           # 30s @ 16kHz
+  max_source_positions: 400_000           # 30s @ 16kHz
   max_target_positions: 1024
   sampling_ratios: 1,1,1,1,1,1,1
-  eval_bleu: True
   eval_gen_config:
     prefix_size: 1
   data_augmentation:
@@ -44,16 +42,12 @@ task:
     pitch: 0,0
     echo_delay: 20,200
     echo_decay: 0.05,0.2
-  knowledge_distillation:
-    path: ${env:KD_ROOT}/en-de
-    loss_lambda: 0                        # Set 0 to deactivate
-    temperature: 1
 
 model:
   _name: s2t_pretrained
 
   encoder:
-    path: ${env:MODELS_ROOT}/wav2vec2/wav2vec_vox_960h_pl.pt
+    path: ${env:MODELS_ROOT}/hubert/hubert_large_ll60k_finetune_ls960.pt
     layers_to_freeze:
       - r".*feature_extractor\..*|.*post_extract_proj\..*|.*pos_conv\..*"     # Feature extractor
       - r".*encoder\.layers\..*\.fc[1-2]\..*"                                 # FFN
@@ -97,10 +91,13 @@ optimizer:
 
 optimization:
   lr: [1e-04]
-  max_update: 16544             # ~16 epochs
-  update_freq: [128]                # with 1 GPU
+  max_update: 32_272             # ~16 epochs
+  update_freq: [64]                # with 1 GPU
   clip_norm: 20.0
+  sentence_avg: True
 
 lr_scheduler:
-  _name: inverse_sqrt
-  warmup_updates: 1654          # ~10% of training
+  _name: tri_stage
+  phase_ratio: [0.15, 0.15, 0.7]
+  init_lr_scale: 0.01
+  final_lr_scale: 0.01

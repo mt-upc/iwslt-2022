@@ -10,9 +10,14 @@ common:
   memory_efficient_fp16: True
   wandb_project: ${env:WANDB_PROJECT}
 
+distributed_training:
+  heartbeat_timeout: 180
+
 checkpoint:
   save_dir: ${env:SAVE_DIR}/${env:WANDB_NAME}/ckpts/
   save_interval_updates: 500
+  no_last_checkpoints: True
+  keep_best_checkpoints: 0
 
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
@@ -21,8 +26,7 @@ dataset:
   batch_size: 32
   required_batch_size_multiple: 1
   max_tokens: 1_150_000                   # ~70s @ 16kHz
-  max_tokens_valid: 1_920_000             # 120s @ 16kHz
-  skip_invalid_size_inputs_valid_test: True
+  disable_validation: True
 
 task:
   _name: speech_to_text
