@@ -10,14 +10,9 @@ common:
   memory_efficient_fp16: True
   wandb_project: ${env:WANDB_PROJECT}
 
-distributed_training:
-  find_unused_parameters: True
-
 checkpoint:
   save_dir: ${env:SAVE_DIR}/${env:WANDB_NAME}/ckpts/
   save_interval_updates: 500
-  keep_interval_updates: 10
-  keep_best_checkpoints: 5
 
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
@@ -26,9 +21,7 @@ dataset:
   batch_size: 32
   required_batch_size_multiple: 1
   max_tokens: 1_150_000                   # ~70s @ 16kHz
-  max_tokens_valid: 4_000_000             # 250s @ 16kHz
-  validate_interval_updates: 500
-  validate_after_updates: 8_128           # ~4 epochs
+  max_tokens_valid: 1_920_000             # 120s @ 16kHz
   skip_invalid_size_inputs_valid_test: True
 
 task:
@@ -37,7 +30,6 @@ task:
   max_source_positions: 400_000           # 25s @ 16kHz
   max_target_positions: 1024
   sampling_ratios: 1,1,1,1,1,1,1
-  eval_bleu: True
   eval_gen_config:
     prefix_size: 1
   data_augmentation:
@@ -46,10 +38,6 @@ task:
     pitch: 0,0
     echo_delay: 20,200
     echo_decay: 0.05,0.2
-  knowledge_distillation:
-    path: ${env:KD_ROOT}/en-de
-    loss_lambda: 0                        # Set 0 to deactivate
-    temperature: 1
 
 model:
   _name: s2t_pretrained
