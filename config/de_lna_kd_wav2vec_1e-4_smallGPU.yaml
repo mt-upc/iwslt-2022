@@ -25,13 +25,13 @@ dataset:
   num_workers: 8
   batch_size: 18
   required_batch_size_multiple: 1
-  max_tokens: 480_000             # 30s @ 16kHz
+  max_tokens: 480_000                     # 30s @ 16kHz
   disable_validation: True
 
 task:
   _name: speech_to_text
   data: ${env:DATA_ROOT}/en-de
-  max_source_positions: 400_000           # 30s @ 16kHz
+  max_source_positions: 400_000           # 25s @ 16kHz
   max_target_positions: 1024
   sampling_ratios: 1,1,1,1,1,1,1
   eval_gen_config:
@@ -43,7 +43,7 @@ task:
     echo_delay: 20,200
     echo_decay: 0.05,0.2
   knowledge_distillation:
-    path: ${env:KD_ROOT}/en-de    # remove this if you want to deactivate KD
+    path: ${env:KD_ROOT}/en-de
 
 model:
   _name: s2t_pretrained
@@ -95,8 +95,8 @@ optimizer:
 
 optimization:
   lr: [1e-04]
-  max_update: 32_272             # ~16 epochs
-  update_freq: [64]                # with 1 GPU
+  max_update: 32_272                      # ~16 epochs
+  update_freq: [64]                       # with 1 GPU
   clip_norm: 20.0
   sentence_avg: True
 
