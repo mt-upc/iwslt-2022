@@ -22,10 +22,10 @@ checkpoint:
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
-  num_workers: 8
-  batch_size: 18
+  num_workers: 16
+  batch_size: 32
   required_batch_size_multiple: 1
-  max_tokens: 480_000             # 30s @ 16kHz
+  max_tokens: 1_150_000                   # ~70s @ 16kHz
   disable_validation: True
 
 task:
@@ -98,8 +98,8 @@ optimizer:
 
 optimization:
   lr: [2.5e-04]
-  max_update: 32_272             # ~16 epochs
-  update_freq: [64]                # with 1 GPU
+  max_update: 32_512             # ~16 epochs
+  update_freq: [24]                # with 1 GPU
   clip_norm: 20.0
   sentence_avg: True
 
