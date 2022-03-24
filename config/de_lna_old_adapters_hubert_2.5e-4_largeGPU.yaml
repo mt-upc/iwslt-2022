@@ -52,8 +52,6 @@ model:
       - r".*feature_extractor\..*|.*post_extract_proj\..*|.*pos_conv\..*"     # Feature extractor
       - r".*encoder\.layers\..*\.fc[1-2]\..*"                                 # FFN
     adapters:
-      adapter_dim: 512
-      adapter_scale: 4
       apply_at_self_attn: False
       apply_at_ffn: True
     length_adaptor:
@@ -80,8 +78,6 @@ model:
       - r".*layers\..*\.self_attn\..*"                                        # Self-attention
       - r".*layers\..*\.fc[1-2]\..*"                                          # FFN
     adapters:
-      adapter_dim: 512
-      adapter_scale: 4
       apply_at_cross_attn: False
       apply_at_self_attn: True
       apply_at_ffn: True
