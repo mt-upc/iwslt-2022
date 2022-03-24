@@ -8,6 +8,7 @@ common:
   seed: 48151623
   fp16: True
   memory_efficient_fp16: True
+  empty_cache_freq: 20
   wandb_project: ${env:WANDB_PROJECT}
 
 distributed_training:
@@ -23,9 +24,9 @@ dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
   num_workers: 8
-  batch_size: 18
-  required_batch_size_multiple: 1
-  max_tokens: 480_000                     # 30s @ 16kHz
+  batch_size: 16
+  required_batch_size_multiple: 2
+  max_tokens: 400_000                     # 30s @ 16kHz
   disable_validation: True
 
 task:
