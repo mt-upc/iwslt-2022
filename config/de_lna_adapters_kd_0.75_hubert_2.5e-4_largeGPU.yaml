@@ -8,7 +8,6 @@ common:
   seed: 48151623
   fp16: True
   memory_efficient_fp16: True
-  empty_cache_freq: 10
   wandb_project: ${env:WANDB_PROJECT}
 
 distributed_training:
@@ -19,21 +18,20 @@ checkpoint:
   save_interval_updates: 500
   no_last_checkpoints: True
   keep_best_checkpoints: 0
-  restore_file: ${env:SAVE_DIR}/${env:WANDB_NAME}/ckpts/checkpoint_1_2000.pt
 
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
-  num_workers: 8
-  batch_size: 16
+  num_workers: 16
+  batch_size: 32
   required_batch_size_multiple: 1
-  max_tokens: 360_000                     # 30s @ 16kHz
+  max_tokens: 1_150_000                   # ~70s @ 16kHz
   disable_validation: True
 
 task:
   _name: speech_to_text
   data: ${env:DATA_ROOT}/en-de
-  max_source_positions: 360_000           # 25s @ 16kHz
+  max_source_positions: 400_000           # 25s @ 16kHz
   max_target_positions: 1024
   sampling_ratios: 1,1,1,1,1,1,1
   eval_gen_config:
@@ -47,7 +45,6 @@ task:
   knowledge_distillation:
     path: ${env:KD_ROOT}/en-de
 
-
 model:
   _name: s2t_pretrained
 
@@ -56,6 +53,11 @@ model:
     layers_to_freeze:
       - r".*feature_extractor\..*|.*post_extract_proj\..*|.*pos_conv\..*"     # Feature extractor
       - r".*encoder\.layers\..*\.fc[1-2]\..*"                                 # FFN
+    adapters:
+      adapter_dim: 512
+      adapter_scale: 4
+      apply_at_self_attn: False
+      apply_at_ffn: True
     length_adaptor:
       in_channels: 1024
       mid_channels: 1024
@@ -79,6 +81,12 @@ model:
       - r".*embed_tokens\..*|.*embed_positions\..*|.*layernorm_embedding\..*" # Embeddings
       - r".*layers\..*\.self_attn\..*"                                        # Self-attention
       - r".*layers\..*\.fc[1-2]\..*"                                          # FFN
+    adapters:
+      adapter_dim: 512
+      adapter_scale: 4
+      apply_at_cross_attn: False
+      apply_at_self_attn: True
+      apply_at_ffn: True
     dropout: 0.0
     attention_dropout: 0.0
     cross_attention_dropout: 0.1
@@ -98,8 +106,8 @@ optimizer:
 
 optimization:
   lr: [2.5e-04]
-  max_update: 32_272                      # ~16 epochs
-  update_freq: [64]                       # with 1 GPU
+  max_update: 32_512                      # ~16 epochs
+  update_freq: [24]                       # with 1 GPU
   clip_norm: 20.0
   sentence_avg: True
 
