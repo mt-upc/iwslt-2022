@@ -8,6 +8,7 @@ common:
   seed: 48151623
   fp16: True
   memory_efficient_fp16: True
+  empty_cache_freq: 10
   wandb_project: ${env:WANDB_PROJECT}
 
 distributed_training:
@@ -18,16 +19,17 @@ checkpoint:
   save_interval_updates: 500
   no_last_checkpoints: True
   keep_best_checkpoints: 0
+  restore_file: ${env:SAVE_DIR}/${env:WANDB_NAME}/ckpts/checkpoint14.pt
 
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
   num_workers: 8
-  batch_size: 18
+  batch_size: 16
   required_batch_size_multiple: 1
-  max_tokens: 480_000                     # 30s @ 16kHz
+  max_tokens: 400_000                     # 30s @ 16kHz
   disable_validation: True
-
+  
 task:
   _name: speech_to_text
   data: ${env:DATA_ROOT}/en-de
