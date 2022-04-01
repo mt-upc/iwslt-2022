@@ -146,13 +146,13 @@ done
 ### Make symbolic links
 
 ```bash
-for tgt_lang in {de,ja,zh}; do
+for tgt_lang in {ja,zh}; do
     ln -s ${MUSTC_ROOT}/en-${tgt_lang}/train_st_filtered.tsv ${DATA_ROOT}/en-${tgt_lang}/train_mustc.tsv
     ln -s ${MUSTC_ROOT}/en-${tgt_lang}/dev_st.tsv ${DATA_ROOT}/en-${tgt_lang}/dev_mustc.tsv
     ln -s ${MUSTC_ROOT}/en-${tgt_lang}/tst-COMMON_st.tsv ${DATA_ROOT}/en-${tgt_lang}/tst-COMMON_mustc.tsv
 done
 
-for tgt_lang in {de,ja,zh}; do
+for tgt_lang in {ja,zh}; do
     for split in {train,dev,test}; do
         if [[ $split != train ]]; then
             ln -s ${COVOST_ROOT}/en-${tgt_lang}/${split}_st_filtered.tsv ${DATA_ROOT}/en-${tgt_lang}/train_${split}_covost.tsv
@@ -247,14 +247,20 @@ sed -i 's+/home/usuaris/veussd/DATABASES/speech_translation/MUSTC_v2.0+/home/usu
 ```
 
 ```bash
-dir_path=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/EuroparlST_wav_16k/en/*.tsv
-sed -i 's+/home/usuaris/veussd/DATABASES/speech_translation/EuroparlST_wav_16k/en/flac.zip+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/EuroparlST_wav_16k/en/flac.zip+g' $dir_path
+dir_path=/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/CoVoST/en-/*.tsv
+sed -i 's+/home/usuaris/veussd/DATABASES/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+g' $dir_path
 ```
 
 ```bash
-dir_path=/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/CoVoST/en-de/*.tsv
-sed -i 's+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+g' $dir_path
+dir_path=/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/CoVoST/en-de/*.tsv
+sed -i 's+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/CoVoST/en-de/clips_16k_mono+/home/usuaris/iaonnis.tsiamas/datasets/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono+g' $dir_path
 ```
+
+```bash
+dir_path=/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/MUSTC_v2.0_wav_16k/en-zh/*.tsv
+sed -i 's+/home/usuaris/veussd/DATABASES/speech_translation/MUSTC_v2.0_wav_16k/en-zh+/home/usuaris/scratch/ioannis.tsiamas/datasets/speech_translation/MUSTC_v2.0_wav_16k/en-zh+g' $dir_path
+```
+
 
 /home/usuaris/veussd/DATABASES/speech_translation/cv-corpus-8.0-2022-01-19/en/clips_16k_mono/
 
@@ -272,3 +278,69 @@ max_tokens: 600000
 max_source: 400000
 batch_size: 24
 ==> 1635
+
+exp_name=de_lna_old_adapters_hubert_2.5e-4_largeGPU
+ckpts=${SAVE_DIR}/${exp_name}/ckpts/checkpoint_
+inputs="${ckpts}8_15000.pt ${ckpts}8_15500.pt ${ckpts}8_16000.pt ${ckpts}9_16500.pt ${ckpts}9_17000.pt"
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+  --inputs $inputs --output ${ckpts}avg_5_around_16000.pt
+
+exp_name=de_lna_adapters_hubert_2.5e-4_largeGPU
+ckpts=${SAVE_DIR}/${exp_name}/ckpts/checkpoint_
+inputs="${ckpts}6_11000.pt ${ckpts}6_11500.pt ${ckpts}6_12000.pt ${ckpts}7_12500.pt ${ckpts}7_13000.pt"
+
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+  --inputs $inputs --output ${ckpts}avg_5_around_12000.pt
+
+exp_name=de_lna_hubert_2.5e-4_largeGPU
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+--inputs ${SAVE_DIR}/${exp_name}/ckpts/ --num-update-checkpoint 10 --output ${SAVE_DIR}/${exp_name}/ckpts/avg_10_last.pt
+
+
+exp_name=de_lna_adapters_kd_1_hubert_2.5e-4_largeGPU
+ckpts=${SAVE_DIR}/${exp_name}/ckpts/checkpoint_
+inputs="${ckpts}12_23500.pt ${ckpts}12_24000.pt ${ckpts}13_24500.pt ${ckpts}13_25000.pt ${ckpts}13_25500.pt"
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+  --inputs $inputs --output ${ckpts}avg_5_around_24500.pt
+
+
+exp_name=de_lna_adapters_kd_0.5_hubert_2.5e-4_largeGPU
+ckpts=${SAVE_DIR}/${exp_name}/ckpts/checkpoint_
+inputs="${ckpts}11_22000.pt ${ckpts}12_22500.pt ${ckpts}12_23000.pt ${ckpts}12_23500.pt ${ckpts}12_24000.pt"
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+  --inputs $inputs --output ${ckpts}avg_5_around_23000.pt
+
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+--inputs ${SAVE_DIR}/${exp_name}/ckpts/ --num-update-checkpoint 10 --output ${SAVE_DIR}/${exp_name}/ckpts/avg_10_last.pt
+
+
+/home/usuaris/veu/gerard.ion.gallego/iwslt22-outputs/de_lna_old_adapters_hubert_2.5e-4_largeGPU/ckpts/checkpoint_8_16000.pt
+/home/usuaris/veu/ioannis.tsiamas/IWSLT22/save_dir/de_lna_old_adapters_hubert_2.5e-4_largeGPU/ckpts/checkpoint_avg_5_around_16000.pt
+
+conda activate cu115
+bash repos/iwslt-2022/scripts/generations/generate_ensemble.sh IWSLT.tst2020 de 3 13 1 /home/usuaris/veu/gerard.ion.gallego/iwslt22-outputs/de_lna_adapters_kd_0.5_hubert_2.5e-4_largeGPU_ft_largeGPU/ckpts/checkpoint_avg_5_around_2250.pt:/home/usuaris/veu/ioannis.tsiamas/IWSLT22/save_dir/de_lna_adapters_hubert_2.5e-4_largeGPU/ckpts/checkpoint_avg_5_around_12000.pt:/home/usuaris/veu/gerard.ion.gallego/iwslt22-outputs/de_lna_hubert_2.5e-4_largeGPU/ckpts/checkpoint_11_22000.pt:/home/usuaris/veu/ioannis.tsiamas/IWSLT22/save_dir/de_lna_wav2vec_2.5e-4_smallGPU/ckpts/checkpoint_8_15000.pt ensemble5 0
+
+
+bash repos/iwslt-2022/scripts/segmentation/eval.sh /home/usuaris/veu/gerard.ion.gallego/iwslt22-outputs/de_lna_adapters_kd_0.5_hubert_2.5e-4_largeGPU_ft_largeGPU/ckpts/checkpoint_avg_5_around_2250.pt IWSLT.tst2021 en de 3 16 16 1 0
+
+
+
+
+
+
+
+
+bash repos/iwslt-2022/scripts/generations/generate_ensemble.sh tst-COMMON-ja ja 3 10 1 /home/usuaris/veu/ioannis.tsiamas/IWSLT22/save_dir/ja_lna_hubert_2.5e-4_smallGPU/ckpts/checkpoint_avg_5_around_23000.pt:/home/usuaris/veu/gerard.ion.gallego/iwslt22-outputs/ja_lna_adapters_hubert_2.5e-4_largeGPU/ckpts/checkpoint_avg_5_around_14000.pt ensemble 0
+
+bash repos/iwslt-2022/scripts/generations/generate_ensemble.sh tst-COMMON-zh zh 3 12 1 /home/usuaris/veu/ioannis.tsiamas/IWSLT22/save_dir/zh_lna_hubert_2.5e-4_smallGPU/ckpts/checkpoint_avg_5_around_23000.pt:/home/usuaris/veu/gerard.ion.gallego/iwslt22-outputs/zh_lna_adapters_hubert_2.5e-4_largeGPU/ckpts/checkpoint_avg_5_around_16000.pt ensemble 0
+
+
+
+bash repos/iwslt-2022/scripts/segmentation/segment.sh tst-COMMON-ja 3 12 13 1
+
+
+exp_name=de_lna_wav2vec_2.5e-4_smallGPU
+ckpts=${SAVE_DIR}/${exp_name}/ckpts/checkpoint_
+inputs="${ckpts}7_14000.pt ${ckpts}7_14500.pt ${ckpts}8_15000.pt ${ckpts}8_15500.pt ${ckpts}8_16000.pt"
+python ${FAIRSEQ_ROOT}/scripts/average_checkpoints.py \
+  --inputs $inputs --output ${ckpts}avg_5_around_15000.pt
