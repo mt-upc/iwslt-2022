@@ -1,59 +1,13 @@
-from typing import Tuple
 import torch
 from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
 import argparse
-from examples.speech_to_text.data_utils import load_df_from_tsv
-from torch.utils.data import DataLoader, Dataset
+
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 from pathlib import Path
-import json
+from knowledge_distillation.source_dataset import SourceDataset
 
 tqdm.pandas(desc="progress")
-
-
-class SourceDataset(Dataset):
-    def __init__(self, data_root, asr_tsv_name, st_tsv_name, tokenizer, completed_ids):
-        super().__init__()
-
-        data_root = Path(data_root)
-
-        asr_df = load_df_from_tsv(data_root / asr_tsv_name)
-        st_df = load_df_from_tsv(data_root / st_tsv_name)
-        assert (
-            asr_df.id.tolist() == st_df.id.tolist()
-        ), "Inconsistent datasets for ASR and ST"
-        st_df["src_text"] = asr_df["tgt_text"].tolist()
-
-        print("Tokenizing and sorting corpus ...")
-        st_df["src_num_tokens"] = st_df.progress_apply(
-            lambda x: len(tokenizer.tokenize(x["src_text"])), axis=1
-        )
-        st_df.sort_values(
-            "src_num_tokens", inplace=True, ignore_index=True, ascending=False
-        )
-
-        self.data = [
-            (id_, src_txt, tgt_txt)
-            for id_, src_txt, tgt_txt in zip(
-                st_df["id"].tolist(),
-                st_df["src_text"].tolist(),
-                st_df["tgt_text"].tolist(),
-            )
-            if id_ not in completed_ids
-        ]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, i) -> Tuple[int, str, str]:
-        return self.data[i]
-
-
-def source_collate_fn(batch: list) -> Tuple[list[int], list[str], list[str]]:
-    ids = [example[0] for example in batch]
-    src_txt = [example[1] for example in batch]
-    tgt_txt = [example[2] for example in batch]
-    return (ids, src_txt, tgt_txt)
 
 
 def prepare_corpus_for_kd(args):
@@ -80,18 +34,20 @@ def prepare_corpus_for_kd(args):
 
     path_to_output = Path(args.path_to_output)
     if path_to_output.exists():
-        completed_ids = [file.stem for file in path_to_output.glob(".pt")]
+        completed_ids = [file.stem for file in path_to_output.glob("*.pt")]
     else:
         completed_ids = []
         path_to_output.mkdir(parents=True, exist_ok=True)
-        
+
+    print(f"Completed ids {len(completed_ids)}")
+
     dataset = SourceDataset(
         args.data_root, args.asr_tsv_name, args.st_tsv_name, tokenizer, completed_ids
     )
     dataloader = DataLoader(
         dataset,
         batch_size=args.batch_size * n_gpu,
-        collate_fn=source_collate_fn,
+        collate_fn=dataset.collater,
         shuffle=False,
         drop_last=False,
         num_workers=4,
@@ -120,14 +76,15 @@ def prepare_corpus_for_kd(args):
 
             for i in range(bs):
                 seq_len_i = tgt_seq_lens[i]
-                topk_outputs_i = topk_outputs[i, 1:seq_len_i, :].detach().cpu()
-                topk_indices_i = topk_indices[i, 1:seq_len_i, :].detach().cpu()
-                
+                topk_outputs_i = topk_outputs[i, args.remove_prefix_len:seq_len_i, :].detach().cpu()
+                topk_indices_i = topk_indices[i, args.remove_prefix_len:seq_len_i, :].detach().cpu()
+
                 torch.save(
                     {
                         "topk_indices": topk_indices_i,
                         "topk_outputs": topk_outputs_i,
-                    }, args.path_to_output / f"{sgm_ids[i]}.pt"
+                    },
+                    path_to_output / f"{sgm_ids[i]}.pt",
                 )
 
 
@@ -165,6 +122,7 @@ if __name__ == "__main__":
         help="keep the top-k most probable tokens",
     )
     parser.add_argument("--batch-size", "-bs", type=int, default=8)
+    parser.add_argument("--remove-prefix-len", "-pref", type=int, default=1)
     args = parser.parse_args()
 
     prepare_corpus_for_kd(args)
