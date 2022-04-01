@@ -6,7 +6,6 @@
 
 import argparse
 import logging
-import os
 from pathlib import Path
 import shutil
 from itertools import groupby
@@ -23,7 +22,6 @@ from examples.speech_to_text.data_utils import (
     gen_config_yaml,
     gen_vocab,
     get_zip_manifest,
-    load_df_from_tsv,
     save_df_to_tsv,
     cal_gcmvn_stats,
 )
@@ -230,47 +228,6 @@ def process(args):
             shutil.rmtree(audio_root)
 
 
-def process_joint(args):
-    cur_root = Path(args.data_root)
-    assert all(
-        (cur_root / f"en-{lang}").is_dir() for lang in MUSTC.LANGUAGES
-    ), "do not have downloaded data available for all 8 languages"
-    # Generate vocab
-    vocab_size_str = "" if args.vocab_type == "char" else str(args.vocab_size)
-    spm_filename_prefix = f"spm_{args.vocab_type}{vocab_size_str}_{args.task}"
-    with NamedTemporaryFile(mode="w") as f:
-        for lang in MUSTC.LANGUAGES:
-            tsv_path = cur_root / f"en-{lang}" / f"train_{args.task}.tsv"
-            df = load_df_from_tsv(tsv_path)
-            for t in df["tgt_text"]:
-                f.write(t + "\n")
-        special_symbols = None
-        if args.task == "st":
-            special_symbols = [f"<lang:{lang}>" for lang in MUSTC.LANGUAGES]
-        gen_vocab(
-            Path(f.name),
-            cur_root / spm_filename_prefix,
-            args.vocab_type,
-            args.vocab_size,
-            special_symbols=special_symbols,
-        )
-    # Generate config YAML
-    gen_config_yaml(
-        cur_root,
-        spm_filename=spm_filename_prefix + ".model",
-        yaml_filename=f"config_{args.task}.yaml",
-        specaugment_policy="ld",
-        prepend_tgt_lang_tag=(args.task == "st"),
-    )
-    # Make symbolic links to manifests
-    for lang in MUSTC.LANGUAGES:
-        for split in MUSTC.SPLITS:
-            src_path = cur_root / f"en-{lang}" / f"{split}_{args.task}.tsv"
-            desc_path = cur_root / f"{split}_{lang}_{args.task}.tsv"
-            if not desc_path.is_symlink():
-                os.symlink(src_path, desc_path)
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", "-d", required=True, type=str)
@@ -282,7 +239,6 @@ def main():
     ),
     parser.add_argument("--vocab-size", default=8000, type=int)
     parser.add_argument("--task", type=str, choices=["asr", "st"])
-    parser.add_argument("--joint", action="store_true", help="")
     parser.add_argument(
         "--cmvn-type",
         default="utterance",
@@ -305,10 +261,7 @@ def main():
     parser.add_argument("--append-lang-id", action="store_true")
     args = parser.parse_args()
 
-    if args.joint:
-        process_joint(args)
-    else:
-        process(args)
+    process(args)
 
 
 if __name__ == "__main__":
