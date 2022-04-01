@@ -8,7 +8,7 @@ common:
   seed: 48151623
   fp16: True
   memory_efficient_fp16: True
-  empty_cache_freq: 10
+  empty_cache_freq: 5
   wandb_project: ${env:WANDB_PROJECT}
 
 distributed_training:

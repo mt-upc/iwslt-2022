@@ -9,7 +9,6 @@ common:
   fp16: True
   memory_efficient_fp16: True
   wandb_project: ${env:WANDB_PROJECT}
-  # comment this when restarting from OOM
   reset_logging: True
 
 distributed_training:
@@ -20,9 +19,7 @@ checkpoint:
   save_interval_updates: 250
   no_last_checkpoints: True
   keep_best_checkpoints: 0
-  # comment this when restarting from OOM
   finetune_from_model: ${env:SAVE_DIR}/de_lna_adapters_kd_0.5_hubert_2.5e-4_largeGPU/ckpts/checkpoint_avg_5_around_29000.pt
-  # restore_file: ${env:SAVE_DIR}/de_lna_adapters_kd_0.5_hubert_2.5e-4_largeGPU_ft_smallGPU/ckpts/...
 
 
 dataset:
