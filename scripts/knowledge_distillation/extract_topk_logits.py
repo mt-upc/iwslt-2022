@@ -42,7 +42,7 @@ def prepare_corpus_for_kd(args):
     print(f"Completed ids {len(completed_ids)}")
 
     dataset = SourceDataset(
-        args.data_root, args.asr_tsv_name, args.st_tsv_name, tokenizer, completed_ids
+        args.path_to_asr_tsv, args.path_to_st_tsv, tokenizer, completed_ids
     )
     dataloader = DataLoader(
         dataset,
@@ -91,16 +91,15 @@ def prepare_corpus_for_kd(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-root", "-d", type=str, required=True)
     parser.add_argument(
-        "--asr-tsv-name",
+        "--path-to-asr-tsv",
         "-asr",
         required=True,
         type=str,
         help="path to the asr tsv with the english transcription under tgt_text",
     )
     parser.add_argument(
-        "--st-tsv-name",
+        "--path-to-st-tsv",
         "-st",
         required=True,
         type=str,

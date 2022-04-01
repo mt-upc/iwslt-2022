@@ -8,9 +8,8 @@ from pathlib import Path
 class SourceDataset(Dataset):
     def __init__(
         self,
-        data_root: str,
-        asr_tsv_name: str,
-        st_tsv_name: str,
+        path_to_asr_tsv: str,
+        path_to_st_tsv: str,
         tokenizer: MBart50TokenizerFast = None,
         completed_ids: list = [],
         seed: int = 42,
@@ -20,10 +19,8 @@ class SourceDataset(Dataset):
 
         self.seed = seed
 
-        data_root = Path(data_root)
-
-        asr_df = load_df_from_tsv(data_root / asr_tsv_name)
-        st_df = load_df_from_tsv(data_root / st_tsv_name)
+        asr_df = load_df_from_tsv(path_to_asr_tsv)
+        st_df = load_df_from_tsv(path_to_st_tsv)
         assert (
             asr_df.id.tolist() == st_df.id.tolist()
         ), "Inconsistent datasets for ASR and ST"
