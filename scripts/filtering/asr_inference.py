@@ -18,7 +18,7 @@ import json
 from pathlib import Path
 from fairseq.data.audio.speech_to_text_dataset import get_features_or_waveform
 from examples.speech_to_text.data_utils import load_df_from_tsv
-from filtering.utterance_cleaners import clean_speaker_name
+from utterance_cleaners import clean_speaker_name
 
 
 class AsrDataset(Dataset):

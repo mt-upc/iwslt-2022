@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
-from examples.iwslt22.scripts.filtering.utterance_cleaners import (
+from utterance_cleaners import (
     covost_utterance_cleaner,
     europarlst_utterance_cleaner,
     mustc_utterance_cleaner,
