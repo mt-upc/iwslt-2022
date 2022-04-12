@@ -105,9 +105,9 @@ def prepare_custom_dataset(
 
     dataset = CustomDataset(path_to_yaml, path_to_wavs, path_to_file_order)
     
-    create_zip = not zip_path.is_file()
+    generate_zip = not zip_path.is_file()
 
-    if create_zip:
+    if generate_zip:
         for waveform, sample_rate, _, _, _, utt_id in tqdm(dataset):
             wf, _ = convert_waveform(
                 waveform,
@@ -143,7 +143,7 @@ def prepare_custom_dataset(
     save_df_to_tsv(df, path_to_tsv)
 
     # Clean up
-    if create_zip:
+    if generate_zip:
         shutil.rmtree(audio_root)
 
 
