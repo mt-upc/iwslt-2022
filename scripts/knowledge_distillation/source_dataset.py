@@ -2,7 +2,6 @@ from examples.speech_to_text.data_utils import load_df_from_tsv
 from torch.utils.data import Dataset
 from transformers import MBart50TokenizerFast
 from typing import Tuple
-from pathlib import Path
 
 
 class SourceDataset(Dataset):

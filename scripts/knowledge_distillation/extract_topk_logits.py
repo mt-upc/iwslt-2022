@@ -5,7 +5,7 @@ import argparse
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from pathlib import Path
-from knowledge_distillation.source_dataset import SourceDataset
+from source_dataset import SourceDataset
 
 tqdm.pandas(desc="progress")
 
