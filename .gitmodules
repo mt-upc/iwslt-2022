@@ -1,0 +1,4 @@
+[submodule "fairseq"]
+	path = fairseq
+	url = https://github.com/mt-upc/fairseq
+	branch = iwslt22

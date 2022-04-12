@@ -12,7 +12,6 @@ Set the environment variables:
 
 ```bash
 export IWSLT_ROOT=...
-export FAIRSEQ_ROOT=...
 export MWERSEGMENTER_ROOT=...
 export SHAS_ROOT=...
 
@@ -32,22 +31,15 @@ export FILTER_ROOT=...
 Clone this repository to `$IWSLT_ROOT`:
 
 ```bash
-git clone https://github.com/mt-upc/iwslt-2022.git ${IWSLT_ROOT} 
+git clone --recursive https://github.com/mt-upc/iwslt-2022.git ${IWSLT_ROOT}
 ```
 
-(TODO: FIX ENV)
-Create a conda environment using the `environment.yml` file and activate it:
+Create a conda environment using the `environment.yml` file, activate it and install Fairseq:
 
 ```bash
 conda env create -f ${IWSLT_ROOT}/environment.yml && \
-conda activate iwslt22
-```
-
-Clone our Fairseq fork and install it:
-
-```bash
-git clone -b iwslt22 https://github.com/mt-upc/fairseq-internal.git ${FAIRSEQ_ROOT} && \
-pip install --editable ${FAIRSEQ_ROOT}
+conda activate iwslt22 && \
+pip install --editable ${IWSLT_ROOT}/fairseq/
 ```
 
 Install NVIDIA's [apex](https://github.com/NVIDIA/apex) library for faster training with fp16 precision:
