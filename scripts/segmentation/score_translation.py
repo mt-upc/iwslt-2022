@@ -35,12 +35,16 @@ def score_translation(
         )
     elif tgt_lang == "ja":
         results["sacrebleu"] = round(
-            sacrebleu.compute(predictions=translations, references=references, tokenize="ja-mecab")["score"],
+            sacrebleu.compute(
+                predictions=translations, references=references, tokenize="ja-mecab"
+            )["score"],
             4,
         )
     elif tgt_lang == "zh":
         results["sacrebleu"] = round(
-            sacrebleu.compute(predictions=translations, references=references, tokenize="zh")["score"],
+            sacrebleu.compute(
+                predictions=translations, references=references, tokenize="zh"
+            )["score"],
             4,
         )
 
