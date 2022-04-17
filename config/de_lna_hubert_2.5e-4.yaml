@@ -8,7 +8,6 @@ common:
   seed: 48151623
   fp16: True
   memory_efficient_fp16: True
-  empty_cache_freq: 10
   wandb_project: ${env:WANDB_PROJECT}
 
 distributed_training:
@@ -23,16 +22,16 @@ checkpoint:
 dataset:
   train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
   valid_subset: dev_mustc
-  num_workers: 8
-  batch_size: 16
+  num_workers: 16
+  batch_size: 32
   required_batch_size_multiple: 1
-  max_tokens: 360_000                     # 30s @ 16kHz
+  max_tokens: 1_150_000                   # ~70s @ 16kHz
   disable_validation: True
 
 task:
   _name: speech_to_text
   data: ${env:DATA_ROOT}/en-de
-  max_source_positions: 360_000           # 25s @ 16kHz
+  max_source_positions: 400_000           # 25s @ 16kHz
   max_target_positions: 1024
   sampling_ratios: 1,1,1,1,1,1,1
   eval_gen_config:
@@ -43,9 +42,6 @@ task:
     pitch: 0,0
     echo_delay: 20,200
     echo_decay: 0.05,0.2
-  knowledge_distillation:
-    path: ${env:KD_ROOT}/en-de
-
 
 model:
   _name: s2t_pretrained
@@ -84,10 +80,8 @@ model:
     activation_dropout: 0.0
 
 criterion:
-  _name: cross_entropy_with_kd
-  teacher_lambda: 1
-  teacher_temperature: 1.3
-  teacher_ignore_prefix_size: 0
+  _name: label_smoothed_cross_entropy
+  label_smoothing: 0.2
   ignore_prefix_size: 1
 
 optimizer:
@@ -97,8 +91,8 @@ optimizer:
 
 optimization:
   lr: [2.5e-04]
-  max_update: 32_272                      # ~16 epochs
-  update_freq: [64]                       # with 1 GPU
+  max_update: 32_512                      # ~16 epochs
+  update_freq: [24]                       # with 1 GPU
   clip_norm: 20.0
   sentence_avg: True
 

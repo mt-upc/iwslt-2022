@@ -20,20 +20,20 @@ checkpoint:
   keep_best_checkpoints: 0
 
 dataset:
-  train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost,train_europarl,train_dev_europarl,train_test_europarl
+  train_subset: train_mustc,train_covost,train_dev_covost,train_test_covost
   valid_subset: dev_mustc
-  num_workers: 8
-  batch_size: 18
+  num_workers: 16
+  batch_size: 32
   required_batch_size_multiple: 1
-  max_tokens: 480_000                     # 30s @ 16kHz
+  max_tokens: 1_150_000                   # ~70s @ 16kHz
   disable_validation: True
 
 task:
   _name: speech_to_text
-  data: ${env:DATA_ROOT}/en-de
+  data: ${env:DATA_ROOT}/en-ja
   max_source_positions: 400_000           # 25s @ 16kHz
   max_target_positions: 1024
-  sampling_ratios: 1,1,1,1,1,1,1
+  sampling_ratios: 1,1,1,1
   eval_gen_config:
     prefix_size: 1
   data_augmentation:
@@ -47,13 +47,10 @@ model:
   _name: s2t_pretrained
 
   encoder:
-    path: ${env:MODELS_ROOT}/wav2vec2/wav2vec_vox_960h_pl.pt
+    path: ${env:MODELS_ROOT}/hubert/hubert_large_ll60k_finetune_ls960.pt
     layers_to_freeze:
       - r".*feature_extractor\..*|.*post_extract_proj\..*|.*pos_conv\..*"     # Feature extractor
       - r".*encoder\.layers\..*\.fc[1-2]\..*"                                 # FFN
-    adapters:
-      apply_at_self_attn: False
-      apply_at_ffn: True
     length_adaptor:
       in_channels: 1024
       mid_channels: 1024
@@ -77,10 +74,6 @@ model:
       - r".*embed_tokens\..*|.*embed_positions\..*|.*layernorm_embedding\..*" # Embeddings
       - r".*layers\..*\.self_attn\..*"                                        # Self-attention
       - r".*layers\..*\.fc[1-2]\..*"                                          # FFN
-    adapters:
-      apply_at_cross_attn: False
-      apply_at_self_attn: True
-      apply_at_ffn: True
     dropout: 0.0
     attention_dropout: 0.0
     cross_attention_dropout: 0.1
@@ -97,9 +90,9 @@ optimizer:
   adam_eps: 1e-08
 
 optimization:
-  lr: [1e-04]
-  max_update: 32_272                      # ~16 epochs
-  update_freq: [64]                       # with 1 GPU
+  lr: [2.5e-04]
+  max_update: 32_752                      # ~16 epochs
+  update_freq: [24]                       # with 1 GPU
   clip_norm: 20.0
   sentence_avg: True
 
