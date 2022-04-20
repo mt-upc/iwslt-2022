@@ -307,7 +307,7 @@ ${IWSLT_ROOT}/scripts/generate.sh $EXP_NAME $CKPT_NAME $SUBSET $TGT_LANG
 
 ## Evaluation on IWSLT.tst20xx (unknown segmentation)
 
-To generate translations for the IWSLT test sets, we first have to segment the audio files. \
+To generate translations for the IWSLT test sets, we first have to segment the audio files.
 
 We are using [SHAS](https://arxiv.org/abs/2202.04774). Clone the SHAS repo at `$SHAS_ROOT`:
 
