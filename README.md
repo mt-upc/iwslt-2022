@@ -282,7 +282,7 @@ To train an experiment called `EXP_NAME`, run the following command:
 EXP_NAME=...     # one of the available experiments
 
 # to adjust the update_freq according to the number of available GPUs
-base_update_freq=72
+base_update_freq=24
 n_gpus=$(nvidia-smi --list-gpus | wc -l)
 
 fairseq-hydra-train \
