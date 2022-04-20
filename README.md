@@ -130,7 +130,7 @@ done
 
 Prepare the tsvs for the MuST-C, Europarl-ST and CoVoST data: \
 We do this process for both the ASR and ST tasks and for all language pairs. \
-We only prepapre the tsvs and do not learn a vocabulary since we will reuse the one from mBART50.
+We only prepare the tsvs and do not learn a vocabulary since we will reuse the one from mBART50.
 
 ```bash
 # MuST-C (en-de,en-zh,en-ja)
