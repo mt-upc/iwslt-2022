@@ -2,9 +2,30 @@
 
 System submitted to the [IWSLT 2022](https://iwslt.org/2022/) [offline speech translation task](https://iwslt.org/2022/offline) by the [UPC Machine Translation group](https://mt.cs.upc.edu).
 
+The paper is available [here](https://aclanthology.org/2022.iwslt-1.23/).
+
 ## Abstract
 
 <em>This paper describes the submissions of the UPC Machine Translation group to the IWSLT 2022 Offline Speech Translation and Speech-to-Speech Translation tracks. The offline task involves translating English speech to German, Japanese and Chinese text. Our Speech Translation systems are trained end-to-end and are based on large pretrained speech and text models. We use an efficient fine-tuning technique that trains only specific layers of our system, and explore the use of adapter modules for the non-trainable layers. We further investigate the suitability of different speech encoders (wav2vec 2.0, HuBERT) for our models and the impact of knowledge distillation from the Machine Translation model that we use for the decoder (mBART). For segmenting the IWSLT test sets we fine-tune a pretrained audio segmentation model and achieve improvements of 5 BLEU compared to the given segmentation. Our best single model uses HuBERT and parallel adapters and achieves 29.42 BLEU at English-German MuST-C tst-COMMON and 26.77 at IWSLT 2020 test. By ensembling many models, we further increase translation quality to 30.83 BLEU and 27.78 accordingly. Furthermore, our submission for English-Japanese achieves 15.85 and English-Chinese obtains 25.63 BLEU on the MuST-C tst-COMMON sets. Finally, we extend our system to perform English-German Speech-to-Speech Translation with a pretrained Text-to-Speech model.</em>
+
+## Citation
+```
+@inproceedings{tsiamas-etal-2022-pretrained,
+    title = "Pretrained Speech Encoders and Efficient Fine-tuning Methods for Speech Translation: {UPC} at {IWSLT} 2022",
+    author = "Tsiamas, Ioannis  and
+      G{\'a}llego, Gerard I.  and
+      Escolano, Carlos  and
+      Fonollosa, Jos{\'e}  and
+      Costa-juss{\`a}, Marta R.",
+    booktitle = "Proceedings of the 19th International Conference on Spoken Language Translation (IWSLT 2022)",
+    month = may,
+    year = "2022",
+    address = "Dublin, Ireland (in-person and online)",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.iwslt-1.23",
+    pages = "265--276",
+}
+```
 
 ## Contents
 
